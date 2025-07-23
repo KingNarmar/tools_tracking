@@ -19,8 +19,9 @@ class CustomTextField extends StatelessWidget {
     if (suggestions != null && onSelected != null) {
       return Autocomplete<String>(
         optionsBuilder: (TextEditingValue textEditingValue) {
-          if (textEditingValue.text.isEmpty)
+          if (textEditingValue.text.isEmpty) {
             return const Iterable<String>.empty();
+          }
 
           return suggestions!.where(
             (option) => option.toLowerCase().contains(

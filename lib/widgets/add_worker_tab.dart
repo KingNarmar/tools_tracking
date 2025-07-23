@@ -64,9 +64,7 @@ class AddWorkerTab extends StatelessWidget {
               final jobTitle = cleanInput(jobTitleController.text);
               final department = cleanInput(departmentController.text);
               final hrCode = cleanInput(hrCodeController.text);
-              print(
-                'DEBUG → name="$name", job="$jobTitle", dept="$department", hr="$hrCode"',
-              );
+
               if (name.isEmpty ||
                   jobTitle.isEmpty ||
                   department.isEmpty ||

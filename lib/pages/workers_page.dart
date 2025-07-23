@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:tools_tracking/data/app_database.dart';
 import 'package:tools_tracking/data/database_provider.dart';
 import 'package:tools_tracking/widgets/add_worker_tab.dart';
+import 'package:tools_tracking/widgets/manage_worker_tap.dart';
 
 class WorkersPage extends StatefulWidget {
   const WorkersPage({super.key});
@@ -71,7 +72,7 @@ class _WorkersPageState extends State<WorkersPage> {
               jobTitleSuggestions: jobTitleSuggestions,
               departmentSuggestions: departmentSuggestions,
             ),
-            Container(),
+            ManageWorkerTap(),
           ],
         ),
       ),
