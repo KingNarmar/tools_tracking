@@ -53,6 +53,10 @@ class AppDatabase extends _$AppDatabase {
     await into(workers).insert(worker);
     return true;
   }
+
+  Future<List<Worker>> getAllWorkers() {
+    return select(workers).get();
+  }
 }
 
 LazyDatabase _openConnection() {
