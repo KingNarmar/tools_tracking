@@ -18,6 +18,29 @@ class _WorkersPageState extends State<WorkersPage> {
   final _jobTitleController = TextEditingController();
   final _departmentController = TextEditingController();
   final _hrCodeController = TextEditingController();
+  List<String> workerNames = [];
+  List<String> hrCodes = [];
+  List<String> jobTitles = [];
+  List<String> departments = [];
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final db = Provider.of<DatabaseProvider>(context, listen: false).database;
+      fetchSuggestions(db);
+    });
+  }
+
+  Future<void> fetchSuggestions(AppDatabase db) async {
+    final workers = await db.getAllWorkers();
+    setState(() {
+      workerNames = workers.map((w) => w.name.trim()).toList();
+      hrCodes = workers.map((w) => w.hrCode.trim()).toList();
+      jobTitles = workers.map((w) => w.jobTitle.trim()).toList();
+      departments = workers.map((w) => w.department.trim()).toList();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,13 +49,30 @@ class _WorkersPageState extends State<WorkersPage> {
         padding: EdgeInsets.all(20),
         child: Column(
           children: [
-            CustomTextField(hint: "Worker Name", controller: _nameController),
-            CustomTextField(hint: "Job Title", controller: _jobTitleController),
+            CustomTextField(
+              hint: "Worker Name",
+              controller: _nameController,
+              suggestions: workerNames,
+              onSelected: (val) => _nameController.text = val,
+            ),
+            CustomTextField(
+              hint: "Job Title",
+              controller: _jobTitleController,
+              suggestions: jobTitles,
+              onSelected: (val) => _jobTitleController.text = val,
+            ),
             CustomTextField(
               hint: "Department",
               controller: _departmentController,
+              suggestions: departments,
+              onSelected: (val) => _departmentController.text = val,
             ),
-            CustomTextField(hint: "HR Code", controller: _hrCodeController),
+            CustomTextField(
+              hint: "HR Code",
+              controller: _hrCodeController,
+              suggestions: hrCodes,
+              onSelected: (val) => _hrCodeController.text = val,
+            ),
             ElevatedButton(
               onPressed: () async {
                 final db = Provider.of<DatabaseProvider>(
@@ -40,10 +80,10 @@ class _WorkersPageState extends State<WorkersPage> {
                   listen: false,
                 ).database;
                 final worker = WorkersCompanion(
-                  name: Value(_nameController.text.trim()),
-                  jobTitle: Value(_jobTitleController.text.trim()),
-                  department: Value(_departmentController.text.trim()),
-                  hrCode: Value(_hrCodeController.text.trim()),
+                  name: Value(cleanInput(_nameController.text)),
+                  jobTitle: Value(cleanInput(_jobTitleController.text)),
+                  department: Value(cleanInput(_departmentController.text)),
+                  hrCode: Value(cleanInput(_hrCodeController.text)),
                 );
                 final success = await db.addWorker(worker);
                 final allWorkers = await db.getAllWorkers();
@@ -53,6 +93,7 @@ class _WorkersPageState extends State<WorkersPage> {
                 if (!context.mounted) return;
 
                 if (success) {
+                  FocusScope.of(context).unfocus();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text("Worker added successfully")),
                   );
@@ -81,5 +122,12 @@ class _WorkersPageState extends State<WorkersPage> {
     _departmentController.dispose();
     _hrCodeController.dispose();
     super.dispose();
+  }
+
+  String cleanInput(String input) {
+    return input
+        .trim() // يشيل المسافات من أول وآخر النص
+        .replaceAll(RegExp(r'\s+'), ' ') // يشيل أي مسافات زيادة
+        .toLowerCase(); // يخلي الحروف كلها small
   }
 }

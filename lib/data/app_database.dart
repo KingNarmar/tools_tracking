@@ -57,6 +57,12 @@ class AppDatabase extends _$AppDatabase {
   Future<List<Worker>> getAllWorkers() {
     return select(workers).get();
   }
+
+  Future<List<String>> getAllWorkerNames() async {
+    final query = select(workers);
+    final result = await query.get();
+    return result.map((w) => w.name).toList();
+  }
 }
 
 LazyDatabase _openConnection() {
