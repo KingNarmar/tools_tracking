@@ -28,33 +28,36 @@ class CustomTextField extends StatelessWidget {
             ),
           );
         },
-        onSelected: onSelected!,
+        onSelected: (String val) {
+          controller.text = val;
+          onSelected?.call(val); // في حالة لو الصفحة نفسها عايزة تتصرف كمان
+        },
         fieldViewBuilder:
             (context, textEditingController, focusNode, onFieldSubmitted) {
-              controller.addListener(() {
+              textEditingController.addListener(() {
                 if (controller.text != textEditingController.text) {
-                  textEditingController.text = controller.text;
-                  textEditingController.selection = controller.selection;
+                  controller.text = textEditingController.text;
                 }
               });
-
-              textEditingController.addListener(() {
+              controller.addListener(() {
                 if (textEditingController.text != controller.text) {
-                  controller.text = textEditingController.text;
-                  controller.selection = textEditingController.selection;
+                  textEditingController.text = controller.text;
                 }
               });
               return Padding(
                 padding: EdgeInsets.symmetric(vertical: 20),
                 child: TextField(
                   focusNode: focusNode,
-                  controller: controller,
+                  controller: textEditingController,
                   decoration: InputDecoration(
                     hintText: hint,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(5),
                     ),
                   ),
+                  onSubmitted: (_) {
+                    controller.text = textEditingController.text;
+                  },
                 ),
               );
             },

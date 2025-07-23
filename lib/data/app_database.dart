@@ -42,7 +42,8 @@ class AppDatabase extends _$AppDatabase {
   @override
   int get schemaVersion => 1;
   Future<bool> hrCodeExists(String hrCode) async {
-    final query = select(workers)..where((w) => w.hrCode.equals(hrCode));
+    final normalized = hrCode.trim().toLowerCase();
+    final query = select(workers)..where((w) => w.hrCode.equals(normalized));
     final result = await query.getSingleOrNull();
     return result != null;
   }
@@ -52,6 +53,22 @@ class AppDatabase extends _$AppDatabase {
     if (exists) return false;
     await into(workers).insert(worker);
     return true;
+  }
+
+  Future<bool> updateWorker(Worker worker) async {
+    final normalizedHrCode = worker.hrCode.trim().toLowerCase();
+
+    final duplicate =
+        await (select(workers)..where(
+              (w) =>
+                  w.hrCode.equals(normalizedHrCode) &
+                  w.id.isNotValue(worker.id),
+            ))
+            .getSingleOrNull();
+
+    if (duplicate != null) return false;
+
+    return update(workers).replace(worker);
   }
 
   Future<List<Worker>> getAllWorkers() {
