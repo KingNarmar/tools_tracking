@@ -38,6 +38,7 @@ class WorkerSearchBar extends StatelessWidget {
         Expanded(
           child: TextField(
             controller: searchController,
+
             decoration: InputDecoration(
               prefixIcon: Icon(Icons.search),
               hintText: "Search...",
