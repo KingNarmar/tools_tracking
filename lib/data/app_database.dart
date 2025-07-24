@@ -80,6 +80,10 @@ class AppDatabase extends _$AppDatabase {
     final result = await query.get();
     return result.map((w) => w.name).toList();
   }
+
+  Future<void> deleteWorker(int id) async {
+    await (delete(workers)..where((w) => w.id.equals(id))).go();
+  }
 }
 
 LazyDatabase _openConnection() {

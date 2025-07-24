@@ -2,7 +2,14 @@ import 'package:flutter/material.dart';
 
 class WorkersTable extends StatelessWidget {
   final List<Map<String, dynamic>> workers;
-  const WorkersTable({super.key, required this.workers});
+  final void Function(Map<String, dynamic>) onEdit;
+  final void Function(int) onDelete;
+  const WorkersTable({
+    super.key,
+    required this.workers,
+    required this.onEdit,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -37,9 +44,7 @@ class WorkersTable extends StatelessWidget {
                       ),
                       IconButton(
                         icon: Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {
-                          // حذف العامل
-                        },
+                        onPressed: () => onDelete(worker['id']),
                       ),
                     ],
                   ),

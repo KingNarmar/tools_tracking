@@ -15,6 +15,7 @@ class AddWorkerTab extends StatelessWidget {
   final List<String> hrCodeSuggestions;
   final List<String> jobTitleSuggestions;
   final List<String> departmentSuggestions;
+  final VoidCallback onDataChanged;
   const AddWorkerTab({
     super.key,
     required this.nameController,
@@ -25,6 +26,7 @@ class AddWorkerTab extends StatelessWidget {
     required this.hrCodeSuggestions,
     required this.jobTitleSuggestions,
     required this.departmentSuggestions,
+    required this.onDataChanged,
   });
 
   @override
@@ -91,6 +93,7 @@ class AddWorkerTab extends StatelessWidget {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text("Worker added successfully")),
                 );
+                onDataChanged();
                 nameController.clear();
                 jobTitleController.clear();
                 departmentController.clear();

@@ -71,8 +71,23 @@ class _WorkersPageState extends State<WorkersPage> {
               hrCodeSuggestions: hrCodeSuggestions,
               jobTitleSuggestions: jobTitleSuggestions,
               departmentSuggestions: departmentSuggestions,
+              onDataChanged: () {
+                final db = Provider.of<DatabaseProvider>(
+                  context,
+                  listen: false,
+                ).database;
+                fetchSuggestions(db);
+              },
             ),
-            ManageWorkerTap(),
+            ManageWorkerTap(
+              onDataChanged: () {
+                final db = Provider.of<DatabaseProvider>(
+                  context,
+                  listen: false,
+                ).database;
+                fetchSuggestions(db);
+              },
+            ),
           ],
         ),
       ),
