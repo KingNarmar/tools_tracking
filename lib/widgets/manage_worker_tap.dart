@@ -1,6 +1,8 @@
+import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tools_tracking/data/database_provider.dart';
+import 'package:tools_tracking/widgets/edit_worker_form.dart';
 
 import 'package:tools_tracking/widgets/worker_search_bar.dart';
 import 'package:tools_tracking/widgets/workers_table.dart';
@@ -97,9 +99,27 @@ class _ManageWorkerTapState extends State<ManageWorkerTap> {
     });
   }
 
-  void _editWorker(Map<String, dynamic> worker) {
-    // TODO: افتح فورم التعديل هنا أو اعرض نافذة
-    print("Edit: ${worker['name']}");
+  Future<void> _editWorker(Map<String, dynamic> worker) async {
+    final db = Provider.of<DatabaseProvider>(context, listen: false).database;
+    final id = worker['id'] as int;
+
+    final fullWorker = await (db.select(
+      db.workers,
+    )..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+
+    if (!mounted || fullWorker == null) return;
+
+    showDialog(
+      context: context,
+      builder: (_) => EditWorkerForm(
+        worker: fullWorker,
+        onUpdated: () async {
+          await _loadWorkers();
+          await _loadWorkerNames();
+          widget.onDataChanged();
+        },
+      ),
+    );
   }
 
   Future<void> _deleteWorker(int id) async {

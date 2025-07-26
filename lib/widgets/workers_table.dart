@@ -39,7 +39,7 @@ class WorkersTable extends StatelessWidget {
                       IconButton(
                         icon: Icon(Icons.edit, color: Colors.blue),
                         onPressed: () {
-                          // تعديل العامل
+                          onEdit(worker);
                         },
                       ),
                       IconButton(
