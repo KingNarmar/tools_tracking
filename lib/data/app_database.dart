@@ -18,6 +18,7 @@ class Workers extends Table {
 // Tools Table
 class Tools extends Table {
   IntColumn get id => integer().autoIncrement()();
+  TextColumn get toolId => text().withLength(min: 1, max: 100)();
   TextColumn get name => text().withLength(min: 1, max: 100)();
   TextColumn get unit => text().withLength(min: 1, max: 100)();
 }
@@ -83,6 +84,57 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> deleteWorker(int id) async {
     await (delete(workers)..where((w) => w.id.equals(id))).go();
+  }
+
+  Future<void> insertTool(ToolsCompanion tool) async {
+    await into(tools).insert(tool);
+  }
+
+  Future<bool> updateTool(Tool tool) async {
+    final cleanName = tool.name.trim().toLowerCase().replaceAll(
+      RegExp(r'\s+'),
+      ' ',
+    );
+
+    // تحقق من عدم وجود أداة أخرى بنفس الاسم
+    final duplicate =
+        await (select(tools)..where(
+              (t) => t.name.equals(cleanName) & t.id.isNotValue(tool.id),
+            ))
+            .getSingleOrNull();
+
+    if (duplicate != null) {
+      return false; // أداة بنفس الاسم موجودة
+    }
+
+    // تعديل الأداة بعد تنظيف الاسم
+    final updatedTool = tool.copyWith(name: cleanName);
+    return update(tools).replace(updatedTool);
+  }
+
+  Future<Tool?> getToolById(int id) {
+    return (select(tools)..where((t) => t.id.equals(id))).getSingleOrNull();
+  }
+
+  Future<Tool?> getToolByName(String name) {
+    final clean = name.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+    return (select(
+      tools,
+    )..where((t) => t.name.equals(clean))).getSingleOrNull();
+  }
+
+  Future<String> generateNextToolId() async {
+    final allTools = await select(tools).get();
+    final existingIds = allTools.map((t) => t.toolId).toList();
+
+    final numbers = existingIds
+        .map((id) => int.tryParse(id.replaceAll(RegExp(r'[^\d]'), '')) ?? 0)
+        .toList();
+
+    final nextNumber = (numbers.isEmpty
+        ? 1
+        : (numbers.reduce((a, b) => a > b ? a : b) + 1));
+    return 'TOOL-${nextNumber.toString().padLeft(3, '0')}';
   }
 }
 

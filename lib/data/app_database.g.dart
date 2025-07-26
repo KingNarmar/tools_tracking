@@ -386,6 +386,19 @@ class $ToolsTable extends Tools with TableInfo<$ToolsTable, Tool> {
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
+  static const VerificationMeta _toolIdMeta = const VerificationMeta('toolId');
+  @override
+  late final GeneratedColumn<String> toolId = GeneratedColumn<String>(
+    'tool_id',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 100,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -413,7 +426,7 @@ class $ToolsTable extends Tools with TableInfo<$ToolsTable, Tool> {
     requiredDuringInsert: true,
   );
   @override
-  List<GeneratedColumn> get $columns => [id, name, unit];
+  List<GeneratedColumn> get $columns => [id, toolId, name, unit];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -428,6 +441,14 @@ class $ToolsTable extends Tools with TableInfo<$ToolsTable, Tool> {
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('tool_id')) {
+      context.handle(
+        _toolIdMeta,
+        toolId.isAcceptableOrUnknown(data['tool_id']!, _toolIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_toolIdMeta);
     }
     if (data.containsKey('name')) {
       context.handle(
@@ -458,6 +479,10 @@ class $ToolsTable extends Tools with TableInfo<$ToolsTable, Tool> {
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
+      toolId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tool_id'],
+      )!,
       name: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}name'],
@@ -477,20 +502,32 @@ class $ToolsTable extends Tools with TableInfo<$ToolsTable, Tool> {
 
 class Tool extends DataClass implements Insertable<Tool> {
   final int id;
+  final String toolId;
   final String name;
   final String unit;
-  const Tool({required this.id, required this.name, required this.unit});
+  const Tool({
+    required this.id,
+    required this.toolId,
+    required this.name,
+    required this.unit,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['tool_id'] = Variable<String>(toolId);
     map['name'] = Variable<String>(name);
     map['unit'] = Variable<String>(unit);
     return map;
   }
 
   ToolsCompanion toCompanion(bool nullToAbsent) {
-    return ToolsCompanion(id: Value(id), name: Value(name), unit: Value(unit));
+    return ToolsCompanion(
+      id: Value(id),
+      toolId: Value(toolId),
+      name: Value(name),
+      unit: Value(unit),
+    );
   }
 
   factory Tool.fromJson(
@@ -500,6 +537,7 @@ class Tool extends DataClass implements Insertable<Tool> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Tool(
       id: serializer.fromJson<int>(json['id']),
+      toolId: serializer.fromJson<String>(json['toolId']),
       name: serializer.fromJson<String>(json['name']),
       unit: serializer.fromJson<String>(json['unit']),
     );
@@ -509,16 +547,22 @@ class Tool extends DataClass implements Insertable<Tool> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'toolId': serializer.toJson<String>(toolId),
       'name': serializer.toJson<String>(name),
       'unit': serializer.toJson<String>(unit),
     };
   }
 
-  Tool copyWith({int? id, String? name, String? unit}) =>
-      Tool(id: id ?? this.id, name: name ?? this.name, unit: unit ?? this.unit);
+  Tool copyWith({int? id, String? toolId, String? name, String? unit}) => Tool(
+    id: id ?? this.id,
+    toolId: toolId ?? this.toolId,
+    name: name ?? this.name,
+    unit: unit ?? this.unit,
+  );
   Tool copyWithCompanion(ToolsCompanion data) {
     return Tool(
       id: data.id.present ? data.id.value : this.id,
+      toolId: data.toolId.present ? data.toolId.value : this.toolId,
       name: data.name.present ? data.name.value : this.name,
       unit: data.unit.present ? data.unit.value : this.unit,
     );
@@ -528,6 +572,7 @@ class Tool extends DataClass implements Insertable<Tool> {
   String toString() {
     return (StringBuffer('Tool(')
           ..write('id: $id, ')
+          ..write('toolId: $toolId, ')
           ..write('name: $name, ')
           ..write('unit: $unit')
           ..write(')'))
@@ -535,38 +580,45 @@ class Tool extends DataClass implements Insertable<Tool> {
   }
 
   @override
-  int get hashCode => Object.hash(id, name, unit);
+  int get hashCode => Object.hash(id, toolId, name, unit);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Tool &&
           other.id == this.id &&
+          other.toolId == this.toolId &&
           other.name == this.name &&
           other.unit == this.unit);
 }
 
 class ToolsCompanion extends UpdateCompanion<Tool> {
   final Value<int> id;
+  final Value<String> toolId;
   final Value<String> name;
   final Value<String> unit;
   const ToolsCompanion({
     this.id = const Value.absent(),
+    this.toolId = const Value.absent(),
     this.name = const Value.absent(),
     this.unit = const Value.absent(),
   });
   ToolsCompanion.insert({
     this.id = const Value.absent(),
+    required String toolId,
     required String name,
     required String unit,
-  }) : name = Value(name),
+  }) : toolId = Value(toolId),
+       name = Value(name),
        unit = Value(unit);
   static Insertable<Tool> custom({
     Expression<int>? id,
+    Expression<String>? toolId,
     Expression<String>? name,
     Expression<String>? unit,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (toolId != null) 'tool_id': toolId,
       if (name != null) 'name': name,
       if (unit != null) 'unit': unit,
     });
@@ -574,11 +626,13 @@ class ToolsCompanion extends UpdateCompanion<Tool> {
 
   ToolsCompanion copyWith({
     Value<int>? id,
+    Value<String>? toolId,
     Value<String>? name,
     Value<String>? unit,
   }) {
     return ToolsCompanion(
       id: id ?? this.id,
+      toolId: toolId ?? this.toolId,
       name: name ?? this.name,
       unit: unit ?? this.unit,
     );
@@ -589,6 +643,9 @@ class ToolsCompanion extends UpdateCompanion<Tool> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (toolId.present) {
+      map['tool_id'] = Variable<String>(toolId.value);
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
@@ -603,6 +660,7 @@ class ToolsCompanion extends UpdateCompanion<Tool> {
   String toString() {
     return (StringBuffer('ToolsCompanion(')
           ..write('id: $id, ')
+          ..write('toolId: $toolId, ')
           ..write('name: $name, ')
           ..write('unit: $unit')
           ..write(')'))
@@ -1332,12 +1390,14 @@ typedef $$WorkersTableProcessedTableManager =
 typedef $$ToolsTableCreateCompanionBuilder =
     ToolsCompanion Function({
       Value<int> id,
+      required String toolId,
       required String name,
       required String unit,
     });
 typedef $$ToolsTableUpdateCompanionBuilder =
     ToolsCompanion Function({
       Value<int> id,
+      Value<String> toolId,
       Value<String> name,
       Value<String> unit,
     });
@@ -1375,6 +1435,11 @@ class $$ToolsTableFilterComposer extends Composer<_$AppDatabase, $ToolsTable> {
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get toolId => $composableBuilder(
+    column: $table.toolId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1428,6 +1493,11 @@ class $$ToolsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get toolId => $composableBuilder(
+    column: $table.toolId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get name => $composableBuilder(
     column: $table.name,
     builder: (column) => ColumnOrderings(column),
@@ -1450,6 +1520,9 @@ class $$ToolsTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get toolId =>
+      $composableBuilder(column: $table.toolId, builder: (column) => column);
 
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
@@ -1512,15 +1585,27 @@ class $$ToolsTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<String> toolId = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String> unit = const Value.absent(),
-              }) => ToolsCompanion(id: id, name: name, unit: unit),
+              }) => ToolsCompanion(
+                id: id,
+                toolId: toolId,
+                name: name,
+                unit: unit,
+              ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                required String toolId,
                 required String name,
                 required String unit,
-              }) => ToolsCompanion.insert(id: id, name: name, unit: unit),
+              }) => ToolsCompanion.insert(
+                id: id,
+                toolId: toolId,
+                name: name,
+                unit: unit,
+              ),
           withReferenceMapper: (p0) => p0
               .map(
                 (e) =>
