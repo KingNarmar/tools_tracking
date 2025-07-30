@@ -1,12 +1,10 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+
 import 'package:tools_tracking/data/database_provider.dart';
-import 'package:tools_tracking/pages/tools_page.dart';
-import 'package:tools_tracking/pages/workers_page.dart';
+import 'package:tools_tracking/pages/main_menu_page.dart';
+
+import 'package:tools_tracking/pages/transactions_page.dart';
 
 Future<void> main() async {
   runApp(
@@ -28,7 +26,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const WorkersPage(),
+      home: const MainMenuPage(),
     );
   }
 }

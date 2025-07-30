@@ -2,10 +2,7 @@ import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tools_tracking/data/app_database.dart';
-import 'package:tools_tracking/data/app_database.dart' as db;
 import 'package:tools_tracking/data/database_provider.dart';
-import 'package:tools_tracking/data/app_database.dart';
-import '../data/app_database.dart';
 
 class AddEditToolForm extends StatefulWidget {
   final Tool? existingTool;

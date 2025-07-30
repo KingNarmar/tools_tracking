@@ -668,16 +668,31 @@ class ToolsCompanion extends UpdateCompanion<Tool> {
   }
 }
 
-class $TransactionsTable extends Transactions
-    with TableInfo<$TransactionsTable, Transaction> {
+class $TransactionsTableTable extends TransactionsTable
+    with TableInfo<$TransactionsTableTable, TransactionsTableData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $TransactionsTable(this.attachedDatabase, [this._alias]);
+  $TransactionsTableTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
     'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _transactionIdMeta = const VerificationMeta(
+    'transactionId',
+  );
+  @override
+  late final GeneratedColumn<String> transactionId = GeneratedColumn<String>(
+    'transaction_id',
     aliasedName,
     false,
     type: DriftSqlType.string,
@@ -719,17 +734,15 @@ class $TransactionsTable extends Transactions
       'REFERENCES tools (id)',
     ),
   );
-  static const VerificationMeta _issueQtyMeta = const VerificationMeta(
-    'issueQty',
-  );
+  static const VerificationMeta _issueMeta = const VerificationMeta('issue');
   @override
-  late final GeneratedColumn<int> issueQty = GeneratedColumn<int>(
-    'issue_qty',
+  late final GeneratedColumn<int> issue = GeneratedColumn<int>(
+    'issue',
     aliasedName,
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultValue: Constant(0),
+    defaultValue: const Constant(0),
   );
   static const VerificationMeta _returnQtyMeta = const VerificationMeta(
     'returnQty',
@@ -741,33 +754,67 @@ class $TransactionsTable extends Transactions
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultValue: Constant(0),
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _issueImagePathMeta = const VerificationMeta(
+    'issueImagePath',
+  );
+  @override
+  late final GeneratedColumn<String> issueImagePath = GeneratedColumn<String>(
+    'issue_image_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _returnImagePathMeta = const VerificationMeta(
+    'returnImagePath',
+  );
+  @override
+  late final GeneratedColumn<String> returnImagePath = GeneratedColumn<String>(
+    'return_image_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
   );
   @override
   List<GeneratedColumn> get $columns => [
     id,
+    transactionId,
     date,
     workerId,
     toolId,
-    issueQty,
+    issue,
     returnQty,
+    issueImagePath,
+    returnImagePath,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'transactions';
+  static const String $name = 'transactions_table';
   @override
   VerificationContext validateIntegrity(
-    Insertable<Transaction> instance, {
+    Insertable<TransactionsTableData> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('transaction_id')) {
+      context.handle(
+        _transactionIdMeta,
+        transactionId.isAcceptableOrUnknown(
+          data['transaction_id']!,
+          _transactionIdMeta,
+        ),
+      );
     } else if (isInserting) {
-      context.missing(_idMeta);
+      context.missing(_transactionIdMeta);
     }
     if (data.containsKey('date')) {
       context.handle(
@@ -791,10 +838,10 @@ class $TransactionsTable extends Transactions
     } else if (isInserting) {
       context.missing(_toolIdMeta);
     }
-    if (data.containsKey('issue_qty')) {
+    if (data.containsKey('issue')) {
       context.handle(
-        _issueQtyMeta,
-        issueQty.isAcceptableOrUnknown(data['issue_qty']!, _issueQtyMeta),
+        _issueMeta,
+        issue.isAcceptableOrUnknown(data['issue']!, _issueMeta),
       );
     }
     if (data.containsKey('return_qty')) {
@@ -803,18 +850,40 @@ class $TransactionsTable extends Transactions
         returnQty.isAcceptableOrUnknown(data['return_qty']!, _returnQtyMeta),
       );
     }
+    if (data.containsKey('issue_image_path')) {
+      context.handle(
+        _issueImagePathMeta,
+        issueImagePath.isAcceptableOrUnknown(
+          data['issue_image_path']!,
+          _issueImagePathMeta,
+        ),
+      );
+    }
+    if (data.containsKey('return_image_path')) {
+      context.handle(
+        _returnImagePathMeta,
+        returnImagePath.isAcceptableOrUnknown(
+          data['return_image_path']!,
+          _returnImagePathMeta,
+        ),
+      );
+    }
     return context;
   }
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Transaction map(Map<String, dynamic> data, {String? tablePrefix}) {
+  TransactionsTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Transaction(
+    return TransactionsTableData(
       id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        DriftSqlType.int,
         data['${effectivePrefix}id'],
+      )!,
+      transactionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}transaction_id'],
       )!,
       date: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -828,207 +897,291 @@ class $TransactionsTable extends Transactions
         DriftSqlType.int,
         data['${effectivePrefix}tool_id'],
       )!,
-      issueQty: attachedDatabase.typeMapping.read(
+      issue: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
-        data['${effectivePrefix}issue_qty'],
+        data['${effectivePrefix}issue'],
       )!,
       returnQty: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}return_qty'],
       )!,
+      issueImagePath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}issue_image_path'],
+      ),
+      returnImagePath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}return_image_path'],
+      ),
     );
   }
 
   @override
-  $TransactionsTable createAlias(String alias) {
-    return $TransactionsTable(attachedDatabase, alias);
+  $TransactionsTableTable createAlias(String alias) {
+    return $TransactionsTableTable(attachedDatabase, alias);
   }
 }
 
-class Transaction extends DataClass implements Insertable<Transaction> {
-  final String id;
+class TransactionsTableData extends DataClass
+    implements Insertable<TransactionsTableData> {
+  final int id;
+  final String transactionId;
   final DateTime date;
   final int workerId;
   final int toolId;
-  final int issueQty;
+  final int issue;
   final int returnQty;
-  const Transaction({
+  final String? issueImagePath;
+  final String? returnImagePath;
+  const TransactionsTableData({
     required this.id,
+    required this.transactionId,
     required this.date,
     required this.workerId,
     required this.toolId,
-    required this.issueQty,
+    required this.issue,
     required this.returnQty,
+    this.issueImagePath,
+    this.returnImagePath,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
+    map['id'] = Variable<int>(id);
+    map['transaction_id'] = Variable<String>(transactionId);
     map['date'] = Variable<DateTime>(date);
     map['worker_id'] = Variable<int>(workerId);
     map['tool_id'] = Variable<int>(toolId);
-    map['issue_qty'] = Variable<int>(issueQty);
+    map['issue'] = Variable<int>(issue);
     map['return_qty'] = Variable<int>(returnQty);
+    if (!nullToAbsent || issueImagePath != null) {
+      map['issue_image_path'] = Variable<String>(issueImagePath);
+    }
+    if (!nullToAbsent || returnImagePath != null) {
+      map['return_image_path'] = Variable<String>(returnImagePath);
+    }
     return map;
   }
 
-  TransactionsCompanion toCompanion(bool nullToAbsent) {
-    return TransactionsCompanion(
+  TransactionsTableCompanion toCompanion(bool nullToAbsent) {
+    return TransactionsTableCompanion(
       id: Value(id),
+      transactionId: Value(transactionId),
       date: Value(date),
       workerId: Value(workerId),
       toolId: Value(toolId),
-      issueQty: Value(issueQty),
+      issue: Value(issue),
       returnQty: Value(returnQty),
+      issueImagePath: issueImagePath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(issueImagePath),
+      returnImagePath: returnImagePath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(returnImagePath),
     );
   }
 
-  factory Transaction.fromJson(
+  factory TransactionsTableData.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Transaction(
-      id: serializer.fromJson<String>(json['id']),
+    return TransactionsTableData(
+      id: serializer.fromJson<int>(json['id']),
+      transactionId: serializer.fromJson<String>(json['transactionId']),
       date: serializer.fromJson<DateTime>(json['date']),
       workerId: serializer.fromJson<int>(json['workerId']),
       toolId: serializer.fromJson<int>(json['toolId']),
-      issueQty: serializer.fromJson<int>(json['issueQty']),
+      issue: serializer.fromJson<int>(json['issue']),
       returnQty: serializer.fromJson<int>(json['returnQty']),
+      issueImagePath: serializer.fromJson<String?>(json['issueImagePath']),
+      returnImagePath: serializer.fromJson<String?>(json['returnImagePath']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
+      'id': serializer.toJson<int>(id),
+      'transactionId': serializer.toJson<String>(transactionId),
       'date': serializer.toJson<DateTime>(date),
       'workerId': serializer.toJson<int>(workerId),
       'toolId': serializer.toJson<int>(toolId),
-      'issueQty': serializer.toJson<int>(issueQty),
+      'issue': serializer.toJson<int>(issue),
       'returnQty': serializer.toJson<int>(returnQty),
+      'issueImagePath': serializer.toJson<String?>(issueImagePath),
+      'returnImagePath': serializer.toJson<String?>(returnImagePath),
     };
   }
 
-  Transaction copyWith({
-    String? id,
+  TransactionsTableData copyWith({
+    int? id,
+    String? transactionId,
     DateTime? date,
     int? workerId,
     int? toolId,
-    int? issueQty,
+    int? issue,
     int? returnQty,
-  }) => Transaction(
+    Value<String?> issueImagePath = const Value.absent(),
+    Value<String?> returnImagePath = const Value.absent(),
+  }) => TransactionsTableData(
     id: id ?? this.id,
+    transactionId: transactionId ?? this.transactionId,
     date: date ?? this.date,
     workerId: workerId ?? this.workerId,
     toolId: toolId ?? this.toolId,
-    issueQty: issueQty ?? this.issueQty,
+    issue: issue ?? this.issue,
     returnQty: returnQty ?? this.returnQty,
+    issueImagePath: issueImagePath.present
+        ? issueImagePath.value
+        : this.issueImagePath,
+    returnImagePath: returnImagePath.present
+        ? returnImagePath.value
+        : this.returnImagePath,
   );
-  Transaction copyWithCompanion(TransactionsCompanion data) {
-    return Transaction(
+  TransactionsTableData copyWithCompanion(TransactionsTableCompanion data) {
+    return TransactionsTableData(
       id: data.id.present ? data.id.value : this.id,
+      transactionId: data.transactionId.present
+          ? data.transactionId.value
+          : this.transactionId,
       date: data.date.present ? data.date.value : this.date,
       workerId: data.workerId.present ? data.workerId.value : this.workerId,
       toolId: data.toolId.present ? data.toolId.value : this.toolId,
-      issueQty: data.issueQty.present ? data.issueQty.value : this.issueQty,
+      issue: data.issue.present ? data.issue.value : this.issue,
       returnQty: data.returnQty.present ? data.returnQty.value : this.returnQty,
+      issueImagePath: data.issueImagePath.present
+          ? data.issueImagePath.value
+          : this.issueImagePath,
+      returnImagePath: data.returnImagePath.present
+          ? data.returnImagePath.value
+          : this.returnImagePath,
     );
   }
 
   @override
   String toString() {
-    return (StringBuffer('Transaction(')
+    return (StringBuffer('TransactionsTableData(')
           ..write('id: $id, ')
+          ..write('transactionId: $transactionId, ')
           ..write('date: $date, ')
           ..write('workerId: $workerId, ')
           ..write('toolId: $toolId, ')
-          ..write('issueQty: $issueQty, ')
-          ..write('returnQty: $returnQty')
+          ..write('issue: $issue, ')
+          ..write('returnQty: $returnQty, ')
+          ..write('issueImagePath: $issueImagePath, ')
+          ..write('returnImagePath: $returnImagePath')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, date, workerId, toolId, issueQty, returnQty);
+  int get hashCode => Object.hash(
+    id,
+    transactionId,
+    date,
+    workerId,
+    toolId,
+    issue,
+    returnQty,
+    issueImagePath,
+    returnImagePath,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Transaction &&
+      (other is TransactionsTableData &&
           other.id == this.id &&
+          other.transactionId == this.transactionId &&
           other.date == this.date &&
           other.workerId == this.workerId &&
           other.toolId == this.toolId &&
-          other.issueQty == this.issueQty &&
-          other.returnQty == this.returnQty);
+          other.issue == this.issue &&
+          other.returnQty == this.returnQty &&
+          other.issueImagePath == this.issueImagePath &&
+          other.returnImagePath == this.returnImagePath);
 }
 
-class TransactionsCompanion extends UpdateCompanion<Transaction> {
-  final Value<String> id;
+class TransactionsTableCompanion
+    extends UpdateCompanion<TransactionsTableData> {
+  final Value<int> id;
+  final Value<String> transactionId;
   final Value<DateTime> date;
   final Value<int> workerId;
   final Value<int> toolId;
-  final Value<int> issueQty;
+  final Value<int> issue;
   final Value<int> returnQty;
-  final Value<int> rowid;
-  const TransactionsCompanion({
+  final Value<String?> issueImagePath;
+  final Value<String?> returnImagePath;
+  const TransactionsTableCompanion({
     this.id = const Value.absent(),
+    this.transactionId = const Value.absent(),
     this.date = const Value.absent(),
     this.workerId = const Value.absent(),
     this.toolId = const Value.absent(),
-    this.issueQty = const Value.absent(),
+    this.issue = const Value.absent(),
     this.returnQty = const Value.absent(),
-    this.rowid = const Value.absent(),
+    this.issueImagePath = const Value.absent(),
+    this.returnImagePath = const Value.absent(),
   });
-  TransactionsCompanion.insert({
-    required String id,
+  TransactionsTableCompanion.insert({
+    this.id = const Value.absent(),
+    required String transactionId,
     this.date = const Value.absent(),
     required int workerId,
     required int toolId,
-    this.issueQty = const Value.absent(),
+    this.issue = const Value.absent(),
     this.returnQty = const Value.absent(),
-    this.rowid = const Value.absent(),
-  }) : id = Value(id),
+    this.issueImagePath = const Value.absent(),
+    this.returnImagePath = const Value.absent(),
+  }) : transactionId = Value(transactionId),
        workerId = Value(workerId),
        toolId = Value(toolId);
-  static Insertable<Transaction> custom({
-    Expression<String>? id,
+  static Insertable<TransactionsTableData> custom({
+    Expression<int>? id,
+    Expression<String>? transactionId,
     Expression<DateTime>? date,
     Expression<int>? workerId,
     Expression<int>? toolId,
-    Expression<int>? issueQty,
+    Expression<int>? issue,
     Expression<int>? returnQty,
-    Expression<int>? rowid,
+    Expression<String>? issueImagePath,
+    Expression<String>? returnImagePath,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (transactionId != null) 'transaction_id': transactionId,
       if (date != null) 'date': date,
       if (workerId != null) 'worker_id': workerId,
       if (toolId != null) 'tool_id': toolId,
-      if (issueQty != null) 'issue_qty': issueQty,
+      if (issue != null) 'issue': issue,
       if (returnQty != null) 'return_qty': returnQty,
-      if (rowid != null) 'rowid': rowid,
+      if (issueImagePath != null) 'issue_image_path': issueImagePath,
+      if (returnImagePath != null) 'return_image_path': returnImagePath,
     });
   }
 
-  TransactionsCompanion copyWith({
-    Value<String>? id,
+  TransactionsTableCompanion copyWith({
+    Value<int>? id,
+    Value<String>? transactionId,
     Value<DateTime>? date,
     Value<int>? workerId,
     Value<int>? toolId,
-    Value<int>? issueQty,
+    Value<int>? issue,
     Value<int>? returnQty,
-    Value<int>? rowid,
+    Value<String?>? issueImagePath,
+    Value<String?>? returnImagePath,
   }) {
-    return TransactionsCompanion(
+    return TransactionsTableCompanion(
       id: id ?? this.id,
+      transactionId: transactionId ?? this.transactionId,
       date: date ?? this.date,
       workerId: workerId ?? this.workerId,
       toolId: toolId ?? this.toolId,
-      issueQty: issueQty ?? this.issueQty,
+      issue: issue ?? this.issue,
       returnQty: returnQty ?? this.returnQty,
-      rowid: rowid ?? this.rowid,
+      issueImagePath: issueImagePath ?? this.issueImagePath,
+      returnImagePath: returnImagePath ?? this.returnImagePath,
     );
   }
 
@@ -1036,7 +1189,10 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<String>(id.value);
+      map['id'] = Variable<int>(id.value);
+    }
+    if (transactionId.present) {
+      map['transaction_id'] = Variable<String>(transactionId.value);
     }
     if (date.present) {
       map['date'] = Variable<DateTime>(date.value);
@@ -1047,28 +1203,33 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     if (toolId.present) {
       map['tool_id'] = Variable<int>(toolId.value);
     }
-    if (issueQty.present) {
-      map['issue_qty'] = Variable<int>(issueQty.value);
+    if (issue.present) {
+      map['issue'] = Variable<int>(issue.value);
     }
     if (returnQty.present) {
       map['return_qty'] = Variable<int>(returnQty.value);
     }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
+    if (issueImagePath.present) {
+      map['issue_image_path'] = Variable<String>(issueImagePath.value);
+    }
+    if (returnImagePath.present) {
+      map['return_image_path'] = Variable<String>(returnImagePath.value);
     }
     return map;
   }
 
   @override
   String toString() {
-    return (StringBuffer('TransactionsCompanion(')
+    return (StringBuffer('TransactionsTableCompanion(')
           ..write('id: $id, ')
+          ..write('transactionId: $transactionId, ')
           ..write('date: $date, ')
           ..write('workerId: $workerId, ')
           ..write('toolId: $toolId, ')
-          ..write('issueQty: $issueQty, ')
+          ..write('issue: $issue, ')
           ..write('returnQty: $returnQty, ')
-          ..write('rowid: $rowid')
+          ..write('issueImagePath: $issueImagePath, ')
+          ..write('returnImagePath: $returnImagePath')
           ..write(')'))
         .toString();
   }
@@ -1079,7 +1240,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $WorkersTable workers = $WorkersTable(this);
   late final $ToolsTable tools = $ToolsTable(this);
-  late final $TransactionsTable transactions = $TransactionsTable(this);
+  late final $TransactionsTableTable transactionsTable =
+      $TransactionsTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1087,7 +1249,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     workers,
     tools,
-    transactions,
+    transactionsTable,
   ];
 }
 
@@ -1112,19 +1274,28 @@ final class $$WorkersTableReferences
     extends BaseReferences<_$AppDatabase, $WorkersTable, Worker> {
   $$WorkersTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static MultiTypedResultKey<$TransactionsTable, List<Transaction>>
-  _transactionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.transactions,
-    aliasName: $_aliasNameGenerator(db.workers.id, db.transactions.workerId),
-  );
+  static MultiTypedResultKey<
+    $TransactionsTableTable,
+    List<TransactionsTableData>
+  >
+  _transactionsTableRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.transactionsTable,
+        aliasName: $_aliasNameGenerator(
+          db.workers.id,
+          db.transactionsTable.workerId,
+        ),
+      );
 
-  $$TransactionsTableProcessedTableManager get transactionsRefs {
-    final manager = $$TransactionsTableTableManager(
+  $$TransactionsTableTableProcessedTableManager get transactionsTableRefs {
+    final manager = $$TransactionsTableTableTableManager(
       $_db,
-      $_db.transactions,
+      $_db.transactionsTable,
     ).filter((f) => f.workerId.id.sqlEquals($_itemColumn<int>('id')!));
 
-    final cache = $_typedResult.readTableOrNull(_transactionsRefsTable($_db));
+    final cache = $_typedResult.readTableOrNull(
+      _transactionsTableRefsTable($_db),
+    );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -1165,22 +1336,22 @@ class $$WorkersTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  Expression<bool> transactionsRefs(
-    Expression<bool> Function($$TransactionsTableFilterComposer f) f,
+  Expression<bool> transactionsTableRefs(
+    Expression<bool> Function($$TransactionsTableTableFilterComposer f) f,
   ) {
-    final $$TransactionsTableFilterComposer composer = $composerBuilder(
+    final $$TransactionsTableTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.transactions,
+      referencedTable: $db.transactionsTable,
       getReferencedColumn: (t) => t.workerId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$TransactionsTableFilterComposer(
+          }) => $$TransactionsTableTableFilterComposer(
             $db: $db,
-            $table: $db.transactions,
+            $table: $db.transactionsTable,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -1252,28 +1423,29 @@ class $$WorkersTableAnnotationComposer
   GeneratedColumn<String> get hrCode =>
       $composableBuilder(column: $table.hrCode, builder: (column) => column);
 
-  Expression<T> transactionsRefs<T extends Object>(
-    Expression<T> Function($$TransactionsTableAnnotationComposer a) f,
+  Expression<T> transactionsTableRefs<T extends Object>(
+    Expression<T> Function($$TransactionsTableTableAnnotationComposer a) f,
   ) {
-    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.transactions,
-      getReferencedColumn: (t) => t.workerId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$TransactionsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.transactions,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
+    final $$TransactionsTableTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.transactionsTable,
+          getReferencedColumn: (t) => t.workerId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-          ),
-    );
+              }) => $$TransactionsTableTableAnnotationComposer(
+                $db: $db,
+                $table: $db.transactionsTable,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return f(composer);
   }
 }
@@ -1291,7 +1463,7 @@ class $$WorkersTableTableManager
           $$WorkersTableUpdateCompanionBuilder,
           (Worker, $$WorkersTableReferences),
           Worker,
-          PrefetchHooks Function({bool transactionsRefs})
+          PrefetchHooks Function({bool transactionsTableRefs})
         > {
   $$WorkersTableTableManager(_$AppDatabase db, $WorkersTable table)
     : super(
@@ -1340,27 +1512,29 @@ class $$WorkersTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({transactionsRefs = false}) {
+          prefetchHooksCallback: ({transactionsTableRefs = false}) {
             return PrefetchHooks(
               db: db,
-              explicitlyWatchedTables: [if (transactionsRefs) db.transactions],
+              explicitlyWatchedTables: [
+                if (transactionsTableRefs) db.transactionsTable,
+              ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
                 return [
-                  if (transactionsRefs)
+                  if (transactionsTableRefs)
                     await $_getPrefetchedData<
                       Worker,
                       $WorkersTable,
-                      Transaction
+                      TransactionsTableData
                     >(
                       currentTable: table,
                       referencedTable: $$WorkersTableReferences
-                          ._transactionsRefsTable(db),
+                          ._transactionsTableRefsTable(db),
                       managerFromTypedResult: (p0) => $$WorkersTableReferences(
                         db,
                         table,
                         p0,
-                      ).transactionsRefs,
+                      ).transactionsTableRefs,
                       referencedItemsForCurrentItem: (item, referencedItems) =>
                           referencedItems.where((e) => e.workerId == item.id),
                       typedResults: items,
@@ -1385,7 +1559,7 @@ typedef $$WorkersTableProcessedTableManager =
       $$WorkersTableUpdateCompanionBuilder,
       (Worker, $$WorkersTableReferences),
       Worker,
-      PrefetchHooks Function({bool transactionsRefs})
+      PrefetchHooks Function({bool transactionsTableRefs})
     >;
 typedef $$ToolsTableCreateCompanionBuilder =
     ToolsCompanion Function({
@@ -1406,19 +1580,28 @@ final class $$ToolsTableReferences
     extends BaseReferences<_$AppDatabase, $ToolsTable, Tool> {
   $$ToolsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static MultiTypedResultKey<$TransactionsTable, List<Transaction>>
-  _transactionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.transactions,
-    aliasName: $_aliasNameGenerator(db.tools.id, db.transactions.toolId),
-  );
+  static MultiTypedResultKey<
+    $TransactionsTableTable,
+    List<TransactionsTableData>
+  >
+  _transactionsTableRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.transactionsTable,
+        aliasName: $_aliasNameGenerator(
+          db.tools.id,
+          db.transactionsTable.toolId,
+        ),
+      );
 
-  $$TransactionsTableProcessedTableManager get transactionsRefs {
-    final manager = $$TransactionsTableTableManager(
+  $$TransactionsTableTableProcessedTableManager get transactionsTableRefs {
+    final manager = $$TransactionsTableTableTableManager(
       $_db,
-      $_db.transactions,
+      $_db.transactionsTable,
     ).filter((f) => f.toolId.id.sqlEquals($_itemColumn<int>('id')!));
 
-    final cache = $_typedResult.readTableOrNull(_transactionsRefsTable($_db));
+    final cache = $_typedResult.readTableOrNull(
+      _transactionsTableRefsTable($_db),
+    );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -1453,22 +1636,22 @@ class $$ToolsTableFilterComposer extends Composer<_$AppDatabase, $ToolsTable> {
     builder: (column) => ColumnFilters(column),
   );
 
-  Expression<bool> transactionsRefs(
-    Expression<bool> Function($$TransactionsTableFilterComposer f) f,
+  Expression<bool> transactionsTableRefs(
+    Expression<bool> Function($$TransactionsTableTableFilterComposer f) f,
   ) {
-    final $$TransactionsTableFilterComposer composer = $composerBuilder(
+    final $$TransactionsTableTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.transactions,
+      referencedTable: $db.transactionsTable,
       getReferencedColumn: (t) => t.toolId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$TransactionsTableFilterComposer(
+          }) => $$TransactionsTableTableFilterComposer(
             $db: $db,
-            $table: $db.transactions,
+            $table: $db.transactionsTable,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -1530,28 +1713,29 @@ class $$ToolsTableAnnotationComposer
   GeneratedColumn<String> get unit =>
       $composableBuilder(column: $table.unit, builder: (column) => column);
 
-  Expression<T> transactionsRefs<T extends Object>(
-    Expression<T> Function($$TransactionsTableAnnotationComposer a) f,
+  Expression<T> transactionsTableRefs<T extends Object>(
+    Expression<T> Function($$TransactionsTableTableAnnotationComposer a) f,
   ) {
-    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.transactions,
-      getReferencedColumn: (t) => t.toolId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$TransactionsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.transactions,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
+    final $$TransactionsTableTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.transactionsTable,
+          getReferencedColumn: (t) => t.toolId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-          ),
-    );
+              }) => $$TransactionsTableTableAnnotationComposer(
+                $db: $db,
+                $table: $db.transactionsTable,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return f(composer);
   }
 }
@@ -1569,7 +1753,7 @@ class $$ToolsTableTableManager
           $$ToolsTableUpdateCompanionBuilder,
           (Tool, $$ToolsTableReferences),
           Tool,
-          PrefetchHooks Function({bool transactionsRefs})
+          PrefetchHooks Function({bool transactionsTableRefs})
         > {
   $$ToolsTableTableManager(_$AppDatabase db, $ToolsTable table)
     : super(
@@ -1612,23 +1796,29 @@ class $$ToolsTableTableManager
                     (e.readTable(table), $$ToolsTableReferences(db, table, e)),
               )
               .toList(),
-          prefetchHooksCallback: ({transactionsRefs = false}) {
+          prefetchHooksCallback: ({transactionsTableRefs = false}) {
             return PrefetchHooks(
               db: db,
-              explicitlyWatchedTables: [if (transactionsRefs) db.transactions],
+              explicitlyWatchedTables: [
+                if (transactionsTableRefs) db.transactionsTable,
+              ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
                 return [
-                  if (transactionsRefs)
-                    await $_getPrefetchedData<Tool, $ToolsTable, Transaction>(
+                  if (transactionsTableRefs)
+                    await $_getPrefetchedData<
+                      Tool,
+                      $ToolsTable,
+                      TransactionsTableData
+                    >(
                       currentTable: table,
                       referencedTable: $$ToolsTableReferences
-                          ._transactionsRefsTable(db),
+                          ._transactionsTableRefsTable(db),
                       managerFromTypedResult: (p0) => $$ToolsTableReferences(
                         db,
                         table,
                         p0,
-                      ).transactionsRefs,
+                      ).transactionsTableRefs,
                       referencedItemsForCurrentItem: (item, referencedItems) =>
                           referencedItems.where((e) => e.toolId == item.id),
                       typedResults: items,
@@ -1653,36 +1843,49 @@ typedef $$ToolsTableProcessedTableManager =
       $$ToolsTableUpdateCompanionBuilder,
       (Tool, $$ToolsTableReferences),
       Tool,
-      PrefetchHooks Function({bool transactionsRefs})
+      PrefetchHooks Function({bool transactionsTableRefs})
     >;
-typedef $$TransactionsTableCreateCompanionBuilder =
-    TransactionsCompanion Function({
-      required String id,
+typedef $$TransactionsTableTableCreateCompanionBuilder =
+    TransactionsTableCompanion Function({
+      Value<int> id,
+      required String transactionId,
       Value<DateTime> date,
       required int workerId,
       required int toolId,
-      Value<int> issueQty,
+      Value<int> issue,
       Value<int> returnQty,
-      Value<int> rowid,
+      Value<String?> issueImagePath,
+      Value<String?> returnImagePath,
     });
-typedef $$TransactionsTableUpdateCompanionBuilder =
-    TransactionsCompanion Function({
-      Value<String> id,
+typedef $$TransactionsTableTableUpdateCompanionBuilder =
+    TransactionsTableCompanion Function({
+      Value<int> id,
+      Value<String> transactionId,
       Value<DateTime> date,
       Value<int> workerId,
       Value<int> toolId,
-      Value<int> issueQty,
+      Value<int> issue,
       Value<int> returnQty,
-      Value<int> rowid,
+      Value<String?> issueImagePath,
+      Value<String?> returnImagePath,
     });
 
-final class $$TransactionsTableReferences
-    extends BaseReferences<_$AppDatabase, $TransactionsTable, Transaction> {
-  $$TransactionsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+final class $$TransactionsTableTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $TransactionsTableTable,
+          TransactionsTableData
+        > {
+  $$TransactionsTableTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
 
   static $WorkersTable _workerIdTable(_$AppDatabase db) =>
       db.workers.createAlias(
-        $_aliasNameGenerator(db.transactions.workerId, db.workers.id),
+        $_aliasNameGenerator(db.transactionsTable.workerId, db.workers.id),
       );
 
   $$WorkersTableProcessedTableManager get workerId {
@@ -1700,7 +1903,7 @@ final class $$TransactionsTableReferences
   }
 
   static $ToolsTable _toolIdTable(_$AppDatabase db) => db.tools.createAlias(
-    $_aliasNameGenerator(db.transactions.toolId, db.tools.id),
+    $_aliasNameGenerator(db.transactionsTable.toolId, db.tools.id),
   );
 
   $$ToolsTableProcessedTableManager get toolId {
@@ -1718,17 +1921,22 @@ final class $$TransactionsTableReferences
   }
 }
 
-class $$TransactionsTableFilterComposer
-    extends Composer<_$AppDatabase, $TransactionsTable> {
-  $$TransactionsTableFilterComposer({
+class $$TransactionsTableTableFilterComposer
+    extends Composer<_$AppDatabase, $TransactionsTableTable> {
+  $$TransactionsTableTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get id => $composableBuilder(
+  ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get transactionId => $composableBuilder(
+    column: $table.transactionId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1737,13 +1945,23 @@ class $$TransactionsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get issueQty => $composableBuilder(
-    column: $table.issueQty,
+  ColumnFilters<int> get issue => $composableBuilder(
+    column: $table.issue,
     builder: (column) => ColumnFilters(column),
   );
 
   ColumnFilters<int> get returnQty => $composableBuilder(
     column: $table.returnQty,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get issueImagePath => $composableBuilder(
+    column: $table.issueImagePath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get returnImagePath => $composableBuilder(
+    column: $table.returnImagePath,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1794,17 +2012,22 @@ class $$TransactionsTableFilterComposer
   }
 }
 
-class $$TransactionsTableOrderingComposer
-    extends Composer<_$AppDatabase, $TransactionsTable> {
-  $$TransactionsTableOrderingComposer({
+class $$TransactionsTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $TransactionsTableTable> {
+  $$TransactionsTableTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get id => $composableBuilder(
+  ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get transactionId => $composableBuilder(
+    column: $table.transactionId,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1813,13 +2036,23 @@ class $$TransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get issueQty => $composableBuilder(
-    column: $table.issueQty,
+  ColumnOrderings<int> get issue => $composableBuilder(
+    column: $table.issue,
     builder: (column) => ColumnOrderings(column),
   );
 
   ColumnOrderings<int> get returnQty => $composableBuilder(
     column: $table.returnQty,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get issueImagePath => $composableBuilder(
+    column: $table.issueImagePath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get returnImagePath => $composableBuilder(
+    column: $table.returnImagePath,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1870,26 +2103,41 @@ class $$TransactionsTableOrderingComposer
   }
 }
 
-class $$TransactionsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $TransactionsTable> {
-  $$TransactionsTableAnnotationComposer({
+class $$TransactionsTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TransactionsTableTable> {
+  $$TransactionsTableTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<String> get id =>
+  GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get transactionId => $composableBuilder(
+    column: $table.transactionId,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get date =>
       $composableBuilder(column: $table.date, builder: (column) => column);
 
-  GeneratedColumn<int> get issueQty =>
-      $composableBuilder(column: $table.issueQty, builder: (column) => column);
+  GeneratedColumn<int> get issue =>
+      $composableBuilder(column: $table.issue, builder: (column) => column);
 
   GeneratedColumn<int> get returnQty =>
       $composableBuilder(column: $table.returnQty, builder: (column) => column);
+
+  GeneratedColumn<String> get issueImagePath => $composableBuilder(
+    column: $table.issueImagePath,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get returnImagePath => $composableBuilder(
+    column: $table.returnImagePath,
+    builder: (column) => column,
+  );
 
   $$WorkersTableAnnotationComposer get workerId {
     final $$WorkersTableAnnotationComposer composer = $composerBuilder(
@@ -1938,73 +2186,86 @@ class $$TransactionsTableAnnotationComposer
   }
 }
 
-class $$TransactionsTableTableManager
+class $$TransactionsTableTableTableManager
     extends
         RootTableManager<
           _$AppDatabase,
-          $TransactionsTable,
-          Transaction,
-          $$TransactionsTableFilterComposer,
-          $$TransactionsTableOrderingComposer,
-          $$TransactionsTableAnnotationComposer,
-          $$TransactionsTableCreateCompanionBuilder,
-          $$TransactionsTableUpdateCompanionBuilder,
-          (Transaction, $$TransactionsTableReferences),
-          Transaction,
+          $TransactionsTableTable,
+          TransactionsTableData,
+          $$TransactionsTableTableFilterComposer,
+          $$TransactionsTableTableOrderingComposer,
+          $$TransactionsTableTableAnnotationComposer,
+          $$TransactionsTableTableCreateCompanionBuilder,
+          $$TransactionsTableTableUpdateCompanionBuilder,
+          (TransactionsTableData, $$TransactionsTableTableReferences),
+          TransactionsTableData,
           PrefetchHooks Function({bool workerId, bool toolId})
         > {
-  $$TransactionsTableTableManager(_$AppDatabase db, $TransactionsTable table)
-    : super(
+  $$TransactionsTableTableTableManager(
+    _$AppDatabase db,
+    $TransactionsTableTable table,
+  ) : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$TransactionsTableFilterComposer($db: db, $table: table),
+              $$TransactionsTableTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$TransactionsTableOrderingComposer($db: db, $table: table),
+              $$TransactionsTableTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$TransactionsTableAnnotationComposer($db: db, $table: table),
+              $$TransactionsTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
           updateCompanionCallback:
               ({
-                Value<String> id = const Value.absent(),
+                Value<int> id = const Value.absent(),
+                Value<String> transactionId = const Value.absent(),
                 Value<DateTime> date = const Value.absent(),
                 Value<int> workerId = const Value.absent(),
                 Value<int> toolId = const Value.absent(),
-                Value<int> issueQty = const Value.absent(),
+                Value<int> issue = const Value.absent(),
                 Value<int> returnQty = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => TransactionsCompanion(
+                Value<String?> issueImagePath = const Value.absent(),
+                Value<String?> returnImagePath = const Value.absent(),
+              }) => TransactionsTableCompanion(
                 id: id,
+                transactionId: transactionId,
                 date: date,
                 workerId: workerId,
                 toolId: toolId,
-                issueQty: issueQty,
+                issue: issue,
                 returnQty: returnQty,
-                rowid: rowid,
+                issueImagePath: issueImagePath,
+                returnImagePath: returnImagePath,
               ),
           createCompanionCallback:
               ({
-                required String id,
+                Value<int> id = const Value.absent(),
+                required String transactionId,
                 Value<DateTime> date = const Value.absent(),
                 required int workerId,
                 required int toolId,
-                Value<int> issueQty = const Value.absent(),
+                Value<int> issue = const Value.absent(),
                 Value<int> returnQty = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => TransactionsCompanion.insert(
+                Value<String?> issueImagePath = const Value.absent(),
+                Value<String?> returnImagePath = const Value.absent(),
+              }) => TransactionsTableCompanion.insert(
                 id: id,
+                transactionId: transactionId,
                 date: date,
                 workerId: workerId,
                 toolId: toolId,
-                issueQty: issueQty,
+                issue: issue,
                 returnQty: returnQty,
-                rowid: rowid,
+                issueImagePath: issueImagePath,
+                returnImagePath: returnImagePath,
               ),
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
                   e.readTable(table),
-                  $$TransactionsTableReferences(db, table, e),
+                  $$TransactionsTableTableReferences(db, table, e),
                 ),
               )
               .toList(),
@@ -2033,11 +2294,13 @@ class $$TransactionsTableTableManager
                           state.withJoin(
                                 currentTable: table,
                                 currentColumn: table.workerId,
-                                referencedTable: $$TransactionsTableReferences
-                                    ._workerIdTable(db),
-                                referencedColumn: $$TransactionsTableReferences
-                                    ._workerIdTable(db)
-                                    .id,
+                                referencedTable:
+                                    $$TransactionsTableTableReferences
+                                        ._workerIdTable(db),
+                                referencedColumn:
+                                    $$TransactionsTableTableReferences
+                                        ._workerIdTable(db)
+                                        .id,
                               )
                               as T;
                     }
@@ -2046,11 +2309,13 @@ class $$TransactionsTableTableManager
                           state.withJoin(
                                 currentTable: table,
                                 currentColumn: table.toolId,
-                                referencedTable: $$TransactionsTableReferences
-                                    ._toolIdTable(db),
-                                referencedColumn: $$TransactionsTableReferences
-                                    ._toolIdTable(db)
-                                    .id,
+                                referencedTable:
+                                    $$TransactionsTableTableReferences
+                                        ._toolIdTable(db),
+                                referencedColumn:
+                                    $$TransactionsTableTableReferences
+                                        ._toolIdTable(db)
+                                        .id,
                               )
                               as T;
                     }
@@ -2066,18 +2331,18 @@ class $$TransactionsTableTableManager
       );
 }
 
-typedef $$TransactionsTableProcessedTableManager =
+typedef $$TransactionsTableTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
-      $TransactionsTable,
-      Transaction,
-      $$TransactionsTableFilterComposer,
-      $$TransactionsTableOrderingComposer,
-      $$TransactionsTableAnnotationComposer,
-      $$TransactionsTableCreateCompanionBuilder,
-      $$TransactionsTableUpdateCompanionBuilder,
-      (Transaction, $$TransactionsTableReferences),
-      Transaction,
+      $TransactionsTableTable,
+      TransactionsTableData,
+      $$TransactionsTableTableFilterComposer,
+      $$TransactionsTableTableOrderingComposer,
+      $$TransactionsTableTableAnnotationComposer,
+      $$TransactionsTableTableCreateCompanionBuilder,
+      $$TransactionsTableTableUpdateCompanionBuilder,
+      (TransactionsTableData, $$TransactionsTableTableReferences),
+      TransactionsTableData,
       PrefetchHooks Function({bool workerId, bool toolId})
     >;
 
@@ -2088,6 +2353,6 @@ class $AppDatabaseManager {
       $$WorkersTableTableManager(_db, _db.workers);
   $$ToolsTableTableManager get tools =>
       $$ToolsTableTableManager(_db, _db.tools);
-  $$TransactionsTableTableManager get transactions =>
-      $$TransactionsTableTableManager(_db, _db.transactions);
+  $$TransactionsTableTableTableManager get transactionsTable =>
+      $$TransactionsTableTableTableManager(_db, _db.transactionsTable);
 }
