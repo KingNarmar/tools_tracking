@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tools_tracking/pages/reports_page.dart';
 import 'package:tools_tracking/pages/tools_page.dart';
 import 'package:tools_tracking/pages/workers_page.dart';
 
@@ -34,6 +35,14 @@ class MainMenuPage extends StatelessWidget {
             label: 'Transactions',
             page: const TransactionsPage(),
           ),
+          const SizedBox(height: 16),
+          _buildMenuItem(
+            context,
+            icon: Icons.swap_horiz,
+            label: 'Reports',
+            page: const ReportsPage(),
+          ),
+
           // تقدر تضيف صفحات تانية هنا
         ],
       ),

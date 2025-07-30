@@ -4,8 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:tools_tracking/data/database_provider.dart';
 import 'package:tools_tracking/pages/main_menu_page.dart';
 
-import 'package:tools_tracking/pages/transactions_page.dart';
-
 Future<void> main() async {
   runApp(
     Provider<DatabaseProvider>.value(

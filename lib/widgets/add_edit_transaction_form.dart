@@ -136,8 +136,9 @@ class _AddEditTransactionFormState extends State<AddEditTransactionForm> {
             children: [
               Autocomplete<String>(
                 optionsBuilder: (TextEditingValue textEditingValue) async {
-                  if (textEditingValue.text.isEmpty)
+                  if (textEditingValue.text.isEmpty) {
                     return const Iterable<String>.empty();
+                  }
                   await fetchWorkerSuggestions(textEditingValue.text);
                   return workerSuggestions;
                 },
@@ -161,8 +162,9 @@ class _AddEditTransactionFormState extends State<AddEditTransactionForm> {
               const SizedBox(height: 10),
               Autocomplete<String>(
                 optionsBuilder: (TextEditingValue textEditingValue) async {
-                  if (textEditingValue.text.isEmpty)
+                  if (textEditingValue.text.isEmpty) {
                     return const Iterable<String>.empty();
+                  }
                   await fetchToolSuggestions(textEditingValue.text);
                   return toolSuggestions;
                 },

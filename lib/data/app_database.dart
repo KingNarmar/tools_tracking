@@ -169,20 +169,28 @@ class AppDatabase extends _$AppDatabase {
       (delete(transactionsTable)..where((t) => t.id.equals(id))).go();
 
   Future<List<TransactionWithDetails>> getAllTransactionsWithDetails() {
-    final trx = select(transactionsTable).join([
-      leftOuterJoin(workers, workers.id.equalsExp(transactionsTable.workerId)),
-      leftOuterJoin(tools, tools.id.equalsExp(transactionsTable.toolId)),
-    ]);
+    final trx =
+        (select(transactionsTable)..orderBy([
+              (t) => OrderingTerm.desc(t.date), // ⬅️ هنا التعديل المهم
+            ]))
+            .join([
+              leftOuterJoin(
+                workers,
+                workers.id.equalsExp(transactionsTable.workerId),
+              ),
+              leftOuterJoin(
+                tools,
+                tools.id.equalsExp(transactionsTable.toolId),
+              ),
+            ]);
 
-    return trx
-        .map(
-          (row) => TransactionWithDetails(
-            transaction: row.readTable(transactionsTable),
-            worker: row.readTable(workers),
-            tool: row.readTable(tools),
-          ),
-        )
-        .get();
+    return trx.map((row) {
+      return TransactionWithDetails(
+        transaction: row.readTable(transactionsTable),
+        worker: row.readTable(workers),
+        tool: row.readTable(tools),
+      );
+    }).get();
   }
 }
 
