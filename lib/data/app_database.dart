@@ -4,6 +4,7 @@ import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'dart:io';
+
 part 'app_database.g.dart';
 
 // Tables
@@ -48,6 +49,10 @@ class AppDatabase extends _$AppDatabase {
     final query = select(workers)..where((w) => w.hrCode.equals(normalized));
     final result = await query.getSingleOrNull();
     return result != null;
+  }
+
+  Future<Worker> getWorkerById(int id) {
+    return (select(workers)..where((w) => w.id.equals(id))).getSingle();
   }
 
   Future<Worker?> getWorkerByName(String name) async {
@@ -170,19 +175,15 @@ class AppDatabase extends _$AppDatabase {
 
   Future<List<TransactionWithDetails>> getAllTransactionsWithDetails() {
     final trx =
-        (select(transactionsTable)..orderBy([
-              (t) => OrderingTerm.desc(t.date), // ⬅️ هنا التعديل المهم
-            ]))
-            .join([
-              leftOuterJoin(
-                workers,
-                workers.id.equalsExp(transactionsTable.workerId),
-              ),
-              leftOuterJoin(
-                tools,
-                tools.id.equalsExp(transactionsTable.toolId),
-              ),
-            ]);
+        (select(
+          transactionsTable,
+        )..orderBy([(t) => OrderingTerm.desc(t.date)])).join([
+          leftOuterJoin(
+            workers,
+            workers.id.equalsExp(transactionsTable.workerId),
+          ),
+          leftOuterJoin(tools, tools.id.equalsExp(transactionsTable.toolId)),
+        ]);
 
     return trx.map((row) {
       return TransactionWithDetails(
@@ -204,6 +205,11 @@ class TransactionWithDetails {
     required this.worker,
     required this.tool,
   });
+
+  // ✅ Add these getters to access directly
+  DateTime get date => transaction.date;
+  int get issue => transaction.issue;
+  int get returned => transaction.returnQty;
 }
 
 LazyDatabase _openConnection() {

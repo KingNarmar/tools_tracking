@@ -14,7 +14,7 @@ class TransactionsPage extends StatefulWidget {
 
 class _TransactionsPageState extends State<TransactionsPage> {
   List<TransactionWithDetails> transactions = [];
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   DateTime? _startDate;
   DateTime? _endDate;
 
