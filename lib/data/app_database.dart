@@ -1,4 +1,4 @@
-// app_database.dart (بعد التصحيح)
+// app_database.dart (بعد التصحيح النهائي)
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
@@ -37,13 +37,30 @@ class TransactionsTable extends Table {
       text().named('return_image_path').nullable()();
 }
 
-@DriftDatabase(tables: [Workers, Tools, TransactionsTable])
+class Users extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get username => text().withLength(min: 3, max: 50)();
+  TextColumn get password => text().withLength(min: 6, max: 100)();
+  TextColumn get role =>
+      text().withLength(min: 1, max: 50).withDefault(const Constant("user"))();
+}
+
+@DriftDatabase(tables: [Workers, Tools, TransactionsTable, Users])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
+
   @override
   int get schemaVersion => 1;
 
-  // Worker
+  // Users
+  Future<User?> getUserByCredentials(String username, String password) async {
+    return (select(users)..where(
+          (u) => u.username.equals(username) & u.password.equals(password),
+        ))
+        .getSingleOrNull();
+  }
+
+  // Workers
   Future<bool> hrCodeExists(String hrCode) async {
     final normalized = hrCode.trim().toLowerCase();
     final query = select(workers)..where((w) => w.hrCode.equals(normalized));
@@ -97,7 +114,7 @@ class AppDatabase extends _$AppDatabase {
   Future<void> deleteWorker(int id) async =>
       (delete(workers)..where((w) => w.id.equals(id))).go();
 
-  // Tool
+  // Tools
   Future<Tool?> getToolByName(String name) async {
     final clean = name.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
     return (select(
@@ -155,9 +172,8 @@ class AppDatabase extends _$AppDatabase {
     return totalIssue - totalReturn;
   }
 
-  Future<void> insertTransaction(TransactionsTableCompanion data) async {
-    await into(transactionsTable).insert(data);
-  }
+  Future<void> insertTransaction(TransactionsTableCompanion data) async =>
+      into(transactionsTable).insert(data);
 
   Future<String> generateNextTransactionId() async {
     final lastId =
@@ -206,7 +222,6 @@ class TransactionWithDetails {
     required this.tool,
   });
 
-  // ✅ Add these getters to access directly
   DateTime get date => transaction.date;
   int get issue => transaction.issue;
   int get returned => transaction.returnQty;
@@ -216,7 +231,7 @@ LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'tools_tracking.sqlite'));
-    print("DB PATH: ${file.path}");
+    print("DB PATH: \${file.path}");
     return NativeDatabase(file);
   });
 }
