@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:intl/intl.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
@@ -15,6 +17,11 @@ Future<void> generateWorkerPdf(
     final pdf = pw.Document();
     final dateFormat = DateFormat('yyyy-MM-dd HH:mm');
 
+    // تحميل اللوجو
+    final ByteData logoData = await rootBundle.load('Images/Logo.png');
+    final Uint8List logoBytes = logoData.buffer.asUint8List();
+    final logoImage = pw.MemoryImage(logoBytes);
+
     // حساب العهدة الحالية
     final Map<String, int> currentTools = {};
     for (var trx in transactions) {
@@ -27,20 +34,28 @@ Future<void> generateWorkerPdf(
 
     final toolsInHand = currentTools.entries
         .where((entry) => entry.value > 0)
-        .map((e) => {'name': e.key, 'qty': e.value})
+        .map((entry) {
+          final tool = transactions
+              .firstWhere((trx) => trx.tool.name == entry.key)
+              .tool;
+          return {'name': entry.key, 'qty': entry.value, 'unit': tool.unit};
+        })
         .toList();
 
-    // ترتيب الترانزاكشنز حسب التاريخ من الأحدث للأقدم
+    // ترتيب آخر 5 عمليات
     transactions.sort(
       (a, b) => b.transaction.date.compareTo(a.transaction.date),
     );
-
-    // اختيار آخر 5 فقط
     final recentTransactions = transactions.take(5).toList();
 
     pdf.addPage(
       pw.MultiPage(
         build: (pw.Context context) => [
+          // اللوجو في منتصف الصفحة من الأعلى
+          pw.Center(child: pw.Image(logoImage, width: 120, height: 120)),
+          pw.SizedBox(height: 10),
+
+          // عنوان التقرير والتاريخ
           pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
@@ -58,6 +73,7 @@ Future<void> generateWorkerPdf(
             ],
           ),
           pw.SizedBox(height: 10),
+
           pw.Text('HR Code: ${worker.hrCode}'),
           pw.Text('Department: ${worker.department}'),
           pw.Text('Job Title: ${worker.jobTitle}'),
@@ -94,7 +110,7 @@ Future<void> generateWorkerPdf(
               ? pw.Table.fromTextArray(
                   headers: ['Tool', 'Quantity'],
                   data: toolsInHand
-                      .map((e) => [e['name'], e['qty'].toString()])
+                      .map((e) => [e['name'], '${e['qty']} ${e['unit']}'])
                       .toList(),
                 )
               : pw.Text('No tools currently in possession.'),
