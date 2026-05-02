@@ -107,7 +107,7 @@ class _AddEditToolFormState extends State<AddEditToolForm> {
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              value: _selectedUnit,
+              initialValue: _selectedUnit,
               items: _units
                   .map(
                     (unit) => DropdownMenuItem(value: unit, child: Text(unit)),

@@ -121,16 +121,47 @@ Future<void> generateWorkerPdf(
             style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
           ),
           pw.Text(
+            'Declaration:',
+            style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+          ),
+          pw.Text(
             'I acknowledge that I have received the listed equipment in good condition and understand the following terms:\n'
             '1- I must return the equipment directly to the warehouse, not to any other person.\n'
             '2- I am responsible for obtaining official confirmation from the warehouse upon return.\n'
-            '3- Transferring equipment between workers is strictly prohibited and can only be done through the warehouse.\n\n'
-            'Date: ____ / ____ / 20__\n\n'
-            'Name: ___________________________\n\n'
-            'Employee ID / HR Code: ____________\n\n'
-            'Signature: ______________________',
+            '3- Transferring equipment between workers is strictly prohibited and can only be done through the warehouse.',
             textAlign: pw.TextAlign.justify,
           ),
+          pw.SizedBox(height: 30),
+
+          // خانة التوقيع
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text('Worker Name: ${worker.name}'),
+                  pw.SizedBox(height: 10),
+                  pw.Text('HR Code: ${worker.hrCode}'),
+                  pw.SizedBox(height: 10),
+                  pw.Text('Signature: ____________________'),
+                ],
+              ),
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text('Received by (Warehouse/Admin):'),
+                  pw.SizedBox(height: 10),
+                  pw.Text('Name: ________________________'),
+                  pw.SizedBox(height: 10),
+                  pw.Text('Signature: ____________________'),
+                ],
+              ),
+            ],
+          ),
+          pw.SizedBox(height: 20),
+          pw.Text('Date: ____ / ____ / 20__'),
         ],
       ),
     );

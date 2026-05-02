@@ -11,7 +11,9 @@ class MainMenuPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Tools Tracking System")),
+      appBar: AppBar(
+        title: const Text("Materials Inventory Navigation Assistant"),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [

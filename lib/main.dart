@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -24,7 +26,7 @@ Future<void> main() async {
             role: const Value('admin'),
           ),
         );
-    print("✅ Default user created: admin / admin123");
+    log("✅ Default user created: admin / admin123");
   }
 
   runApp(Provider<DatabaseProvider>.value(value: dbProvider, child: MyApp()));
